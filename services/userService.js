@@ -5,7 +5,6 @@ class UserService {
         const user = await User.findByPk(userId);
         return user;
     }
-
 }
 
 module.exports = new UserService();

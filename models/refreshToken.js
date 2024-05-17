@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Token = sequelize.define('Token', {
+const RefreshToken = sequelize.define('RefreshToken', {
     token: {
         type: DataTypes.STRING,
         allowNull: false
@@ -10,7 +10,7 @@ const Token = sequelize.define('Token', {
         type: DataTypes.UUID,
         allowNull: false
     },
-    deviceId: {
+    userAgent: {
         type: DataTypes.STRING,
         allowNull: false
     },
@@ -22,4 +22,4 @@ const Token = sequelize.define('Token', {
     tableName: 'refreshtokens' // Указание имени таблицы
 });
 
-module.exports = Token;
+module.exports = RefreshToken;

@@ -4,7 +4,7 @@ const signup = async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await authService.signup(email, password);
-        const tokens = await authService.signin(email, password, "defaultDeviceId");
+        const tokens = await authService.signin(email, password, req.headers['user-agent']);
 
         res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
@@ -23,9 +23,9 @@ const signup = async (req, res) => {
 };
 
 const signin = async (req, res) => {
-    const { email, password, deviceId } = req.body;
+    const { email, password } = req.body;
     try {
-        const tokens = await authService.signin(email, password, deviceId);
+        const tokens = await authService.signin(email, password, req.headers['user-agent']);
         res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
             secure: false, // используйте true, если у вас HTTPS
@@ -38,12 +38,11 @@ const signin = async (req, res) => {
 };
 
 const refreshToken = async (req, res) => {
-    const { deviceId } = req.body;
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return res.sendStatus(401);
 
     try {
-        const tokens = await authService.refreshToken(refreshToken, deviceId);
+        const tokens = await authService.refreshToken(refreshToken, req.headers['user-agent']);
         res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
             secure: false,
@@ -67,9 +66,11 @@ const logout = async (req, res) => {
 };
 
 const logoutAll = async (req, res) => {
-    const { email } = req.body;
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.sendStatus(401);
+
     try {
-        await authService.logoutAll(email);
+        await authService.logoutAll(refreshToken);
         res.clearCookie('refreshToken');
         res.status(204).send();
     } catch (error) {

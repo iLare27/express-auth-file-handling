@@ -14,7 +14,7 @@ class AuthService {
         return user;
     }
 
-    async signin(email, password, deviceId) {
+    async signin(email, password, userAgent) {
         const user = await User.findOne({ where: { email } });
         if (!user) {
             throw new Error('User not found');
@@ -26,11 +26,11 @@ class AuthService {
         }
 
         const tokens = tokenService.generateTokens({ id: user.id });
-        await tokenService.saveToken(user.id, tokens.refreshToken, deviceId);
+        await tokenService.saveToken(user.id, tokens.refreshToken, userAgent);
         return tokens;
     }
 
-    async refreshToken(refreshToken, deviceId) {
+    async refreshToken(refreshToken, userAgent) {
         const tokenRecord = await tokenService.findToken(refreshToken);
         if (!tokenRecord) {
             throw new Error('Invalid refresh token');
@@ -42,7 +42,7 @@ class AuthService {
         }
 
         const tokens = tokenService.generateTokens({ id: user.id });
-        await tokenService.saveToken(user.id, tokens.refreshToken, deviceId);
+        await tokenService.saveToken(user.id, tokens.refreshToken, userAgent);
         return tokens;
     }
 
@@ -50,12 +50,13 @@ class AuthService {
         await tokenService.removeToken(refreshToken);
     }
 
-    async logoutAll(email) {
-        const user = await User.findOne({ where: { email } });
-        if (!user) {
-            throw new Error('User not found');
+    async logoutAll(refreshToken) {
+        const userData = tokenService.validateRefreshToken(refreshToken);
+        if (!userData) {
+            throw new Error('Invalid refresh token');
         }
-        await tokenService.removeTokensForUser(user.id);
+
+        await tokenService.removeTokensForUser(userData.id);
     }
 }
 
